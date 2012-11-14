@@ -17,14 +17,16 @@
 @synthesize clip;
 @synthesize labelFont;
 
-/*- (void)dealloc
+#if !__has_feature(objc_arc)
+- (void)dealloc
 {
 	[onString release];
 	[offString release];
 	[onTintColor release];
 
 	[super dealloc];
-}*/
+}
+#endif
 
 - (id)initWithOnString:(NSString *)anOnString offString:(NSString *)anOffString onTintColor:(UIColor *)anOnTintColor
 {

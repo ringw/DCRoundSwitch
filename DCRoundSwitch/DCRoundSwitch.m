@@ -16,11 +16,19 @@
 
 @interface DCRoundSwitch () <UIGestureRecognizerDelegate>
 
+#if __has_feature(objc_arc)
+@property (nonatomic, strong) DCRoundSwitchOutlineLayer *outlineLayer;
+@property (nonatomic, strong) DCRoundSwitchToggleLayer *toggleLayer;
+@property (nonatomic, strong) DCRoundSwitchKnobLayer *knobLayer;
+@property (nonatomic, strong) CAShapeLayer *clipLayer;
+@property (nonatomic) BOOL ignoreTap;
+#else
 @property (nonatomic, retain) DCRoundSwitchOutlineLayer *outlineLayer;
 @property (nonatomic, retain) DCRoundSwitchToggleLayer *toggleLayer;
 @property (nonatomic, retain) DCRoundSwitchKnobLayer *knobLayer;
 @property (nonatomic, retain) CAShapeLayer *clipLayer;
 @property (nonatomic, assign) BOOL ignoreTap;
+#endif
 
 - (void)setup;
 - (void)useLayerMasking;
@@ -37,7 +45,8 @@
 #pragma mark -
 #pragma mark Init & Memory Managment
 
-/*- (void)dealloc
+#if !__has_feature(objc_arc)
+- (void)dealloc
 {
 	[outlineLayer release];
 	[toggleLayer release];
@@ -49,7 +58,8 @@
 	[offText release];
 
 	[super dealloc];
-}*/
+}
+#endif
 
 - (id)init
 {
@@ -130,6 +140,9 @@
 	// toggleLayer so it doesn't bleed out over the outlineLayer.
 
 	self.toggleLayer = [[[[self class] toggleLayerClass] alloc] initWithOnString:self.onText offString:self.offText onTintColor:[UIColor colorWithRed:0.000 green:0.478 blue:0.882 alpha:1.0]];
+#if !__has_feature(objc_arc)
+    [self.toggleLayer autorelease];
+#endif
 	self.toggleLayer.drawOnTint = NO;
 	self.toggleLayer.clip = YES;
 	[self.layer addSublayer:self.toggleLayer];
@@ -156,6 +169,11 @@
 																				 action:@selector(toggleDragged:)];
 	[panGestureRecognizer setDelegate:self];
 	[self addGestureRecognizer:panGestureRecognizer];
+    
+#if !__has_feature(objc_arc)
+    [tapGestureRecognizer autorelease];
+    [panGestureRecognizer autorelease];
+#endif
 
 	[self setNeedsLayout];
 
@@ -352,8 +370,10 @@
 	[self useLayerMasking];
 	[self positionLayersAndMask];
 
+#if !__has_feature(objc_arc)
 	// retain all our targets so they don't disappear before the actions get sent at the end of the animation
-	//[[self allTargets] makeObjectsPerformSelector:@selector(retain)];
+	[[self allTargets] makeObjectsPerformSelector:@selector(retain)];
+#endif
 
 	[CATransaction setCompletionBlock:^{
 		[CATransaction begin];
@@ -399,7 +419,9 @@
 			if (previousOn != on && !ignoreControlEvents)
 				[self sendActionsForControlEvents:UIControlEventValueChanged];
 
-			//[[self allTargets] makeObjectsPerformSelector:@selector(release)];
+#if !__has_feature(objc_arc)
+			[[self allTargets] makeObjectsPerformSelector:@selector(release)];
+#endif
 		}];
 
 		[CATransaction commit];
@@ -410,8 +432,12 @@
 {
 	if (anOnTintColor != onTintColor)
 	{
-		//[onTintColor release];
-		onTintColor = [anOnTintColor copy];
+#if __has_feature(objc_arc)
+        onTintColor = anOnTintColor;
+#else
+		[onTintColor release];
+		onTintColor = [anOnTintColor retain];
+#endif
 		self.toggleLayer.onTintColor = anOnTintColor;
 		[self.toggleLayer setNeedsDisplay];
 	}
@@ -447,7 +473,9 @@
 {
 	if (newOnText != onText)
 	{
-		//[onText release];
+#if !__has_feature(objc_arc)
+		[onText release];
+#endif
 		onText = [newOnText copy];
 		self.toggleLayer.onString = onText;
 		[self.toggleLayer setNeedsDisplay];
@@ -458,7 +486,9 @@
 {
 	if (newOffText != offText)
 	{
-		//[offText release];
+#if !__has_feature(objc_arc)
+		[offText release];
+#endif
 		offText = [newOffText copy];
 		self.toggleLayer.offString = offText;
 		[self.toggleLayer setNeedsDisplay];

@@ -16,14 +16,6 @@
 @implementation DCRoundSwitchDemoAppDelegate
 @synthesize window, viewController;
 
-- (void)dealloc
-{
-	[window release];
-	[viewController release];
-	
-    [super dealloc];
-}
-
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
 	self.window.rootViewController = self.viewController;
